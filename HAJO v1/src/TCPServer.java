@@ -23,5 +23,7 @@ public class TCPServer{
 				}
 			}
 		}).start();
+
+		//kuuntelevan threadin toteutus samalla tavalla
 	}
 }
