@@ -3,7 +3,7 @@ import java.io.*;
 
 public class AdderThread extends Thread {
 	
-	public static int port;
+	public int port;
 
 	public AdderThread(int port) {
 		this.port = port;
@@ -16,7 +16,7 @@ public class AdderThread extends Thread {
 			ServerSocket tcpSockServ = new ServerSocket(port);
 			tcpSockServ.setSoTimeout(10000); //10 sec timeout
 			tcpSock = tcpSockServ.accept();
-			
+			tcpSockServ.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -6,7 +6,7 @@ public class AdderManager {
 	public static String remoteName = "localhost";
 	public static int remoteDatagramPort = 3126;
 	public static int myTcpPort = 15554;
-	public static int adderStartPort = 15549;
+	public static int adderStartPort = 15601;
 
 	public static int timeoutLimit = 5;
 	
@@ -18,7 +18,10 @@ public class AdderManager {
 	static DatagramSocket datagramSock = null;
 	static ServerSocket tcpSockServ = null;
 	static Socket tcpSock = null;
+	
+	//adders
 	static int[] adderPorts;
+	static AdderThread[] adders;
 
 	public static void main(String[] args) {
 		//remote address
@@ -117,8 +120,25 @@ public class AdderManager {
 		
 		//generate adder ports
 		adderPorts = new int[adderCount];
-		for (int i = 0; i <= adderCount; i++) {
-			adderPorts[i] = adderStartPort - i;
+		for (int i = 0; i < adderCount; i++) {
+			adderPorts[i] = adderStartPort + i;
+		}
+		
+		//generate adders
+		adders = new AdderThread[adderCount];
+		for(int i = 0; i < adderCount; i++) {
+			adders[i] = new AdderThread(adderPorts[i]);
+			adders[i].start();
+		}
+		
+		try {
+			for (int i = 0; i < adderCount; i++) {
+				out.writeInt(adderPorts[i]);
+				out.flush();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			quit();
 		}
 		
 //		boolean run = true;
