@@ -9,17 +9,19 @@ public class AdderManager {
 	public static int adderStartPort = 15549;
 
 	public static int timeoutLimit = 5;
+	
+	// object streams for io
+	static ObjectInputStream in = null;
+	static ObjectOutputStream out = null;
+
+	//define socket variables
+	static DatagramSocket datagramSock = null;
+	static ServerSocket tcpSockServ = null;
+	static Socket tcpSock = null;
+	static int[] adderPorts;
 
 	public static void main(String[] args) {
-		// object streams for io
-		ObjectInputStream in = null;
-		ObjectOutputStream out = null;
-		
-		//define socket variables
-		DatagramSocket datagramSock = null;
-		ServerSocket tcpSockServ = null;
-		Socket tcpSock = null;
-
+		//remote address
 		InetAddress addr;
 
 		// tcp socket timeout for connection
@@ -54,7 +56,7 @@ public class AdderManager {
 					tcpTimeout++;
 					if (tcpTimeout == timeoutLimit) {
 						System.out.println("Timeout limit reached");
-						System.exit(0);
+						quit();
 					}
 				} //try
 
@@ -69,7 +71,7 @@ public class AdderManager {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.exit(0);
+			quit();
 		} //try
 
 		
@@ -78,51 +80,95 @@ public class AdderManager {
 			in = new ObjectInputStream(tcpSock.getInputStream());
 			out = new ObjectOutputStream(tcpSock.getOutputStream());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 		//fetch adder count
+		boolean retry = true;
+		int retryCount = 0;
 		int adderCount = 0;
-		try {
-			if (in.available() > 0)
-				adderCount = in.readInt();
-				System.out.println("Requested adder count: " + adderCount);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-
-		boolean run = true;
-		while (run) {
+		while (retry) {
 			try {
-				Thread.sleep(1000);
+				if (in.available() > 0) {
+					adderCount = in.readInt();
+					System.out.println("Requested adder count: " + adderCount);
+					retry = false;
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			} 
+			try {
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-				run = false;
+				retry = false;
+			}
+			retryCount++;
+			if (retryCount >= 50) {
+				try {
+					out.writeInt(-1);
+					out.flush();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				quit();
 			}
 		}
+		
+		//generate adder ports
+		adderPorts = new int[adderCount];
+		for (int i = 0; i <= adderCount; i++) {
+			adderPorts[i] = adderStartPort - i;
+		}
+		
+//		boolean run = true;
+//		while (run) {
+//			try {
+//				Thread.sleep(1000);
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//				run = false;
+//			}
+//		}
+		
+		
+	}
 
+	private static void quit() {
+		System.out.println("Quitting AdderManager");
+		// close all open streams
+		if (in != null)
+			try {
+				in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		if (out != null)
+			try {
+				out.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 
 		// close all open sockets
 		if (datagramSock != null)
 			datagramSock.disconnect();
-		
+
 		if (tcpSockServ != null)
 			try {
 				tcpSockServ.close();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-		
+
 		if (tcpSock != null)
 			try {
 				tcpSock.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
+		System.exit(0);
 	}
 
 }
