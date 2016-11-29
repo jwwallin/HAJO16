@@ -40,7 +40,7 @@ public class AdderThread extends Thread {
 			e.printStackTrace();
 		}
 		
-		if (tcpSock != null) {
+		if (tcpSock != null || tcpSock.isConnected()) {
 			
 			try {
 				//instantiate input and output streams

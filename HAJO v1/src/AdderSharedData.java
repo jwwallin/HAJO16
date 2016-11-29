@@ -7,6 +7,7 @@ public class AdderSharedData {
 	int adderDataSum[];
 	int adderNumberCount[];
 	int totalSum;
+	int totalNumberCount;
 	
 	/**
 	 * synchronized getter for the sum of a specific adder
@@ -22,6 +23,7 @@ public class AdderSharedData {
 		adderDataSum[index] += num;
 		adderNumberCount[index]++;
 		totalSum += num;
+		totalNumberCount++;
 	}
 
 	/**
@@ -36,6 +38,13 @@ public class AdderSharedData {
 	 */
 	public synchronized int getTotalSum() {
 		return totalSum;
+	}
+	
+	/**
+	 * synchronized getter for the current total integer count
+	 */
+	public synchronized int getTotalNumberCount() {
+		return totalNumberCount;
 	}
 
 	/**
