@@ -1,12 +1,19 @@
 import java.net.*;
 import java.io.*;
 
+/**
+ * @author Jussi Wallin
+ *
+ */
 public class AdderThread extends Thread {
 	
 	public int port;
+	public int startPort;
+	boolean stop = false;
 
-	public AdderThread(int port) {
+	public AdderThread(int port, int startPort) {
 		this.port = port;
+		this.startPort = startPort;
 	}
 	
 	public void run() {
@@ -23,7 +30,18 @@ public class AdderThread extends Thread {
 		
 		if (tcpSock != null) {
 			//TODO everything
+			while(!stop) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
 		}
+	}
+	
+	public void requestStop() {
+		stop = true;
 	}
 
 }
