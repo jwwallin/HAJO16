@@ -1,6 +1,10 @@
 import java.io.*;
 import java.net.*;
 
+/**
+ * @author Jussi Wallin
+ *
+ */
 public class AdderManager {
 	
 	// address and port number definitions
@@ -26,6 +30,8 @@ public class AdderManager {
 	static int[] adderPorts;
 	static AdderThread[] adders;
 
+	
+	
 	public static void main(String[] args) {
 		//remote address
 		InetAddress addr;
@@ -97,15 +103,11 @@ public class AdderManager {
 		while (retry) {
 			
 			//read adder count sent by workdistributor
-			try {
-				if (in.available() > 0) {
-					adderCount = in.readInt();
+				if (checkAvailable()) {
+					adderCount = readInt();
 					System.out.println("Requested adder count: " + adderCount);
 					retry = false;
 				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			} 
 			
 			//wait 
 			try {
@@ -118,12 +120,7 @@ public class AdderManager {
 			//check for retries
 			retryCount++;
 			if (retryCount >= 50) {
-				try {
-					out.writeInt(-1);
-					out.flush();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+					sendInt(-1);
 				quit();
 			}
 		}
@@ -137,28 +134,21 @@ public class AdderManager {
 		//generate adders
 		adders = new AdderThread[adderCount];
 		for(int i = 0; i < adderCount; i++) {
-			adders[i] = new AdderThread(adderPorts[i]);
+			adders[i] = new AdderThread(adderPorts[i], adderStartPort);
+			adders[i].setName("Adder-" + i);
 			adders[i].start();
 		}
 		
 		//give port numbers to the workdistributor
-		try {
-			for (int i = 0; i < adderCount; i++) {
-				out.writeInt(adderPorts[i]);
-				out.flush();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			quit();
-		}
+			for (int i = 0; i < adderCount; i++)
+				sendInt(adderPorts[i]);
 		
 		long lastOpTime = System.currentTimeMillis();
 		boolean run = true;
 		while (run) {
 			//check for current operations
-			try {
-				if (in.available() > 0) {
-					switch (in.readInt()) {
+				if (checkAvailable()) {
+					switch (readInt()) {
 					case 0:
 						run = false;
 						break;
@@ -169,16 +159,11 @@ public class AdderManager {
 					case 3:
 						break;
 					default:
-						out.writeInt(-1);
-						out.flush();
+						sendInt(-1);
 					
 					}
 					lastOpTime = System.currentTimeMillis();
 				}
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-			
 			
 			//if no operations by workdistributor in 1 minute
 			if(System.currentTimeMillis() - lastOpTime > 60000) {
@@ -196,7 +181,57 @@ public class AdderManager {
 		
 		quit();
 	}
+	
+	/**
+	 * sends the integer through the TCP socket
+	 * @param i
+	 */
+	private static void sendInt(int i) {
+		try {
+			out.writeInt(i);
+			out.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+			quit();
+		}
+	}
+	
+	/**
+	 * reads the next integer from the TCP socket
+	 * @return
+	 */
+	private static int readInt() {
+		try {
+			return in.readInt();
+		} catch (IOException e) {
+			e.printStackTrace();
+			quit();
+		}
+		return 0;
+	}
+	
+	/**
+	 * checks availability of input from the TCP socket
+	 * @return 
+	 */
+	private static boolean checkAvailable() {
+		try {
+			
+			if (in.available() > 0)
+				return true;
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+			quit();
+		}
+		return false;
+	}
 
+	
+	
+	/**
+	 * closes all connections and adder threads
+	 */
 	private static void quit() {
 		
 		//stop adders if they are running
