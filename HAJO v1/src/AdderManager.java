@@ -29,6 +29,9 @@ public class AdderManager {
 	//adders
 	static int[] adderPorts;
 	static AdderThread[] adders;
+	
+	//the shared data structure
+	static AdderSharedData data;
 
 	
 	
@@ -125,6 +128,9 @@ public class AdderManager {
 			}
 		}
 		
+		//create new shared data structure for the requested adder count
+		data = new AdderSharedData(adderCount);
+		
 		//generate adder ports
 		adderPorts = new int[adderCount];
 		for (int i = 0; i < adderCount; i++) {
@@ -134,7 +140,7 @@ public class AdderManager {
 		//generate adders
 		adders = new AdderThread[adderCount];
 		for(int i = 0; i < adderCount; i++) {
-			adders[i] = new AdderThread(adderPorts[i], adderStartPort);
+			adders[i] = new AdderThread(adderPorts[i], adderStartPort, data);
 			adders[i].setName("Adder-" + i);
 			adders[i].start();
 		}
