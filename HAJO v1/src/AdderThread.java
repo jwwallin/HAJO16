@@ -7,13 +7,24 @@ import java.io.*;
  */
 public class AdderThread extends Thread {
 	
+	//port number and the first (0th) adder port number
 	public int port;
 	public int startPort;
+	
+	//boolean for the manager to be able to request a stop 
 	boolean stop = false;
+	
+	// shared data structure
+	AdderSharedData data;
+	
+	// object streams for IO
+	static ObjectInputStream in = null;
 
-	public AdderThread(int port, int startPort) {
+	
+	public AdderThread(int port, int startPort, AdderSharedData data) {
 		this.port = port;
 		this.startPort = startPort;
+		this.data = data;
 	}
 	
 	public void run() {
@@ -25,12 +36,43 @@ public class AdderThread extends Thread {
 			tcpSock = tcpSockServ.accept();
 			tcpSockServ.close();
 		} catch (IOException e) {
+			System.out.println("Exception when creating and accepting tcp socket with server socket");
 			e.printStackTrace();
 		}
 		
 		if (tcpSock != null) {
-			//TODO everything
+			
+			try {
+				//instantiate input and output streams
+				in = new ObjectInputStream(tcpSock.getInputStream());
+			} catch (IOException e) {
+				System.out.println("Exception when starting object streams.");
+				e.printStackTrace();
+				stop = true;
+			}
+			
+			// main adder loop
 			while(!stop) {
+				
+				try {
+					//read if available
+					if (in.available() > 0) {
+						int curr = in.readInt();
+						switch (curr) {
+						//integer read is zero => stop this adder
+						case 0:
+							stop = true;
+							break;
+						// else add to the value of this adder
+						default:
+							data.increaseAdderDataSum(port-startPort, curr);
+						}
+					}
+				} catch (IOException e1) {
+					System.out.println("Exception when trying to read next integer from object stream");
+					e1.printStackTrace();
+				}
+				
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
