@@ -155,14 +155,34 @@ public class AdderManager {
 			//check for current operations
 				if (checkAvailable()) {
 					switch (readInt()) {
+					
+					//work distributor has requested  a stop to all adders
 					case 0:
 						run = false;
 						break;
+						
+					//work distributor has requested total sum
 					case 1:
+						sendInt(data.getTotalSum());
 						break;
+						
+					//work distributor has requested the adder with greatest sum
 					case 2:
+						int biggestIndex = 0;
+						int biggest = data.getAdderDataSum(0);
+						for (int i = 1; i < adderCount; i++) {
+							int num = data.getAdderDataSum(i);
+							if (num > biggest) {
+								biggestIndex = i;
+							}
+							
+							sendInt(biggestIndex);
+						}
 						break;
+						
+					//work distributor has requested the total count of numbers
 					case 3:
+						sendInt(data.getTotalNumberCount());
 						break;
 					default:
 						sendInt(-1);
