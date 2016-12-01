@@ -10,14 +10,14 @@ public class AdderSharedData {
 	int totalNumberCount;
 	
 	/**
-	 * synchronized getter for the sum of a specific adder
+	 * Synchronised getter for the sum of a specific adder
 	 */
 	public synchronized int getAdderDataSum(int i) {
 		return adderDataSum[i];
 	}
 
 	/**
-	 * synchronized method for operating on the data
+	 * Synchronised method for operating on the data
 	 */
 	public synchronized void increaseAdderDataSum(int index, int num) {
 		adderDataSum[index] += num;
@@ -27,21 +27,21 @@ public class AdderSharedData {
 	}
 
 	/**
-	 * synchronized getter for the summed integer count
+	 * Synchronised getter for the summed integer count
 	 */
 	public synchronized int getAdderNumberCount(int i) {
 		return adderNumberCount[i];
 	}
 
 	/**
-	 * synchronized getter for the current total sum
+	 * Synchronised getter for the current total sum
 	 */
 	public synchronized int getTotalSum() {
 		return totalSum;
 	}
 	
 	/**
-	 * synchronized getter for the current total integer count
+	 * Synchronised getter for the current total integer count
 	 */
 	public synchronized int getTotalNumberCount() {
 		return totalNumberCount;

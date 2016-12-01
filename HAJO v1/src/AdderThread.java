@@ -36,7 +36,6 @@ public class AdderThread extends Thread {
 			tcpSock = tcpSockServ.accept();
 			tcpSockServ.close();
 		} catch (IOException e) {
-			System.out.println("Exception when creating and accepting tcp socket with server socket");
 			e.printStackTrace();
 		}
 		
@@ -46,7 +45,6 @@ public class AdderThread extends Thread {
 				//instantiate input and output streams
 				in = new ObjectInputStream(tcpSock.getInputStream());
 			} catch (IOException e) {
-				System.out.println("Exception when starting object streams.");
 				e.printStackTrace();
 				stop = true;
 			}
@@ -69,7 +67,6 @@ public class AdderThread extends Thread {
 						}
 					}
 				} catch (IOException e1) {
-					System.out.println("Exception when trying to read next integer from object stream");
 					e1.printStackTrace();
 				}
 				
