@@ -174,6 +174,7 @@ public class AdderManager {
 							int num = data.getAdderDataSum(i);
 							if (num > biggest) {
 								biggestIndex = i;
+								biggest = num;
 							}
 							
 							sendInt(biggestIndex);
@@ -209,7 +210,7 @@ public class AdderManager {
 	}
 	
 	/**
-	 * sends the integer through the TCP socket
+	 * sends the integer through the TCP socket created earlier
 	 * @param i
 	 */
 	private static void sendInt(int i) {
@@ -217,6 +218,7 @@ public class AdderManager {
 			out.writeInt(i);
 			out.flush();
 		} catch (IOException e) {
+			System.out.println("Exception while sending an integer");
 			e.printStackTrace();
 			quit();
 		}
@@ -230,6 +232,7 @@ public class AdderManager {
 		try {
 			return in.readInt();
 		} catch (IOException e) {
+			System.out.println("Exception while reading an integer");
 			e.printStackTrace();
 			quit();
 		}
@@ -247,6 +250,7 @@ public class AdderManager {
 				return true;
 			
 		} catch (IOException e) {
+			System.out.println("Exception while checking availability");
 			e.printStackTrace();
 			quit();
 		}
