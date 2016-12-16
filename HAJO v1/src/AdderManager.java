@@ -2,8 +2,8 @@ import java.io.*;
 import java.net.*;
 
 /**
- * @author Jussi Wallin
- *
+ * @author Jussi Wallin, Antti Auranen, Niklas Luomala
+ * 
  */
 public class AdderManager {
 	
