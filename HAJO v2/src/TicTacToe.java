@@ -10,5 +10,6 @@ public interface TicTacToe extends Remote{
 	int doTurn(int playerNum, int pos) throws Exception;
 	boolean gameGoing() throws Exception;
 	boolean startGame(int playerNum) throws Exception;
+	int getWinner() throws Exception;
 	
 }

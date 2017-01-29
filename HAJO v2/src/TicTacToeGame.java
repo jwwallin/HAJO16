@@ -17,6 +17,8 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.GridPane;
@@ -38,7 +40,7 @@ public class TicTacToeGame extends Application {
 	public static void main(String[] args) {
 
     	if (args.length != 1) {
-    		System.out.println("Usage: NoppaClient <serverhost>");
+    		System.out.println("Usage: TicTacToeGame <serverhost>");
     		System.exit(0);
     		}
 		host = "rmi://" + args[0] + "/TicTacToe";
@@ -127,10 +129,13 @@ public class TicTacToeGame extends Application {
 	
 	void playTurn(int row, int col) {
 		try {
-			System.out.println("playing turn");
+			System.out.print("playing turn: ");
 			if (TTT.doTurn(playerNum, 3*row+col)==0) {
 				System.out.println("success");
+			} else {
+				System.out.println("failed");
 			}
+			
 			
 			
 		} catch (Exception e) {
@@ -147,7 +152,42 @@ public class TicTacToeGame extends Application {
 				btns[i].setText("" + convertNumToMarker(board[i]));
 			}
 			
-			primaryStage.show();
+			if (!TTT.gameGoing() && primaryStage.getScene() != sceneStart) {
+				primaryStage.setScene(sceneStart);
+				
+				int winner = TTT.getWinner();
+				
+				//alert players of the winner of the round
+				if (winner == playerNum) {
+					
+					Alert alert = new Alert(AlertType.INFORMATION);
+					alert.setTitle("Winner");
+					alert.setHeaderText(null);
+					alert.setContentText("Congrats player " + playerNum + ", you won the game!");
+					alert.showAndWait();
+					
+				} else if (winner == -1) {
+					
+					Alert alert = new Alert(AlertType.INFORMATION);
+					alert.setTitle("Uhoh");
+					alert.setHeaderText(null);
+					alert.setContentText("Oh no, nobody wins. :'( ");
+					alert.showAndWait();
+					
+				} else {
+
+					
+					Alert alert = new Alert(AlertType.INFORMATION);
+					alert.setTitle("Loser");
+					alert.setHeaderText(null);
+					alert.setContentText("Oh no. Player " + playerNum + ", you lost the game...");
+					alert.showAndWait();
+					
+				}
+				
+			}
+			
+			//primaryStage.show();
 			
 		} catch (Exception e) {
 			

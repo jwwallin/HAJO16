@@ -20,6 +20,7 @@ public class TicTacToeSrv extends java.rmi.server.UnicastRemoteObject implements
 	int currentTurn = 1;
 	boolean gameGoing;
 	boolean[] startGame = {false, false};
+	int winner;
 	
 	@Override
 	synchronized public int registerPlayer() throws Exception {
@@ -50,11 +51,35 @@ public class TicTacToeSrv extends java.rmi.server.UnicastRemoteObject implements
 	synchronized public int doTurn(int playerNum, int pos) throws Exception {
 		
 		if (board[pos] == 0 && gameGoing && currentTurn == playerNum) { //check nothing is present in this square
-			if (currentTurn == 1) currentTurn = 2;
-			if (currentTurn == 2) currentTurn = 1; //change to next players turn
+			if (currentTurn == 1) { 
+				System.err.println("Server Debug: Set turn to player 2 by " + playerNum);
+				currentTurn = 2; }
+			
+			else {
+				System.err.println("Server Debug: Set turn to player 1 by " + playerNum);
+				currentTurn = 1; //change to next players turn
+			}
 			board[pos] = playerNum; //set players mark on the square
+
+			int result = checkGameEnd();
+			if (result != 0) {
+				winner = result;
+				gameGoing = false;
+				board = new int[9];
+				startGame[0] = startGame[1] = false;
+			}
+			
 			return 0; //return success
 		} else {
+
+			int result = checkGameEnd();
+			if (result != 0) {
+				winner = result;
+				gameGoing = false;
+				board = new int[9];
+				startGame[0] = startGame[1] = false;
+			}
+			
 			return -1; //return failure
 		}
 	}
@@ -76,6 +101,35 @@ public class TicTacToeSrv extends java.rmi.server.UnicastRemoteObject implements
 		
 	}
 	
+	int checkGameEnd() {
+		//check columns
+		for (int i = 0; i < 3; i++) {
+			if (board[i] != 0 && board[i] == board[i+3] && board[i] == board[i+6]) return board[i];
+		}
+		//check rows
+		for (int i = 0; i < 7; i+=3) {
+			if (board[i] != 0 && board[i] == board[i+1] && board[i] == board[i+2]) return board[i];
+		}
+		//check diagonals
+		if (board[0] != 0 && board[0] == board[4] && board[0] == board[8]) return board[0];
+		if (board[2] != 0 && board[2] == board[4] && board[0] == board[6]) return board[2];
+		
+		int i;
+		//check if completely full
+		for (i = 0; i < board.length; i++) {
+			if (board[i] == 0) break;
+		}
+		
+		if (i>board.length) return -1;
+		
+		//no straight of threes
+		return 0;
+	}
+
+	@Override
+	public int getWinner() throws Exception {
+		return winner;
+	}
 	
 
 }
