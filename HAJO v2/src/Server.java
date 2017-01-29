@@ -7,13 +7,13 @@
  *
  */
 
-import java.rmi.registry.Registry;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
+import java.io.Console;
+import java.io.IOException;
+import java.rmi.Naming;
         
 
-public class Server implements TicTacToe {
+public class Server {
+	
 	
 	public Server () {};
 
@@ -22,24 +22,29 @@ public class Server implements TicTacToe {
 	 */
 	public static void main(String[] args) {
 		try {
-			Server srv = new Server();
-			TicTacToe stub = (TicTacToe) UnicastRemoteObject.exportObject(srv, 0);
+			TicTacToe srv = new TicTacToeSrv();
 
-			Registry registry = LocateRegistry.getRegistry(1099);
-			registry.bind("TicTacToe", stub);
+			Naming.rebind("rmi://localhost:15000/TicTacToe", srv);
 			
 			System.err.println("Debug: Server ready.");
+			
+			
 		} catch (Exception e) {
 			System.err.println("Debug: Error: "+ e.toString());
 			e.printStackTrace();
 		}
+		
+		stop();
 
 	}
+	
+	static void stop() {
 
-	@Override
-	public int registerPlayer() throws RemoteException {
-		System.err.println("Debug: Registered player");
-		return -1;
+		Console c = System.console();
+	    if (c != null) {
+	        c.format("\nPress ENTER to proceed.\n");
+	        c.readLine();
+	    }
 	}
 
 }
