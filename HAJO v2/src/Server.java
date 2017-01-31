@@ -1,8 +1,4 @@
 /**
- * 
- */
-
-/**
  * @author Jussi Wallin, Antti Auranen, Niklas Luomala
  *
  */
@@ -10,7 +6,7 @@
 import java.io.Console;
 import java.io.IOException;
 import java.rmi.Naming;
-        
+
 
 public class Server {
 	

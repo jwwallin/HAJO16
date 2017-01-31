@@ -1,8 +1,4 @@
 /**
- * 
- */
-
-/**
  * @author Jussi Walli, Antti Auranen, Niklas Niemelä
  *
  */

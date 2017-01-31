@@ -1,14 +1,12 @@
-import java.io.Serializable;
-import java.rmi.RemoteException;
-
-/**
- * 
- */
-
 /**
  * @author Jussi Wallin, Antti Auranen, Niklas Niemelä
  *
  */
+
+
+import java.io.Serializable;
+import java.rmi.RemoteException;
+
 public class TicTacToeSrv extends java.rmi.server.UnicastRemoteObject implements TicTacToe {
 
 	protected TicTacToeSrv() throws RemoteException {
