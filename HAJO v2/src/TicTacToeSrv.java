@@ -1,13 +1,11 @@
-import java.rmi.RemoteException;
-
-/**
- * 
- */
-
 /**
  * @author Jussi Wallin, Antti Auranen, Niklas Niemelä
  *
  */
+
+
+import java.rmi.RemoteException;
+
 @SuppressWarnings("serial")
 public class TicTacToeSrv extends java.rmi.server.UnicastRemoteObject implements TicTacToe {
 
