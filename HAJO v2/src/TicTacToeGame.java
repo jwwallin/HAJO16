@@ -27,9 +27,12 @@ public class TicTacToeGame extends Application {
 	static int[] board;
 	static boolean play;
 	static String host;
-	
+
+	// create button objects list
 	Button[] btns = new Button[9];
 	static TicTacToe TTT;
+	
+	// visual components
 	Stage primaryStage;
 	Scene sceneMain, sceneStart;
 	
@@ -122,7 +125,7 @@ public class TicTacToeGame extends Application {
         t.schedule(task, 0, 500);
         
 	}
-	
+	// Play a turn	
 	void playTurn(int row, int col) {
 		try {
 			System.out.print("playing turn: ");
@@ -131,14 +134,12 @@ public class TicTacToeGame extends Application {
 			} else {
 				System.out.println("failed");
 			}
-			
-			
-			
+
 		} catch (Exception e) {
 			
 		}
 	}
-	
+	// Updates the TicTacToe board
 	void updateBoard() {
 
 		try {
