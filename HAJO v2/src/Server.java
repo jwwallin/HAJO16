@@ -3,14 +3,11 @@
  *
  */
 
-import java.io.Console;
-import java.io.IOException;
 import java.rmi.Naming;
 
 
 public class Server {
-	
-	
+		
 	public Server () {};
 
 	/**
@@ -29,19 +26,6 @@ public class Server {
 			System.err.println("Debug: Error: "+ e.toString());
 			e.printStackTrace();
 		}
-		
-		stop()
-
 	}
-	
-	static void stop() {
-
-		Console c = System.console();
-	    if (c != null) {
-	        c.format("\nPress ENTER to proceed.\n");
-	        c.readLine();
-	    }
-	}
-
 }
 
