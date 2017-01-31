@@ -34,7 +34,7 @@ public class Server {
 			e.printStackTrace();
 		}
 		
-		stop();
+		stop()
 
 	}
 	
@@ -48,3 +48,4 @@ public class Server {
 	}
 
 }
+

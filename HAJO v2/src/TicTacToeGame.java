@@ -114,7 +114,7 @@ public class TicTacToeGame extends Application {
 
 			@Override
 			public void run() {
-				//
+				
 				Platform.runLater(()->{
 					updateBoard();
 				});
@@ -193,7 +193,7 @@ public class TicTacToeGame extends Application {
 			
 		}
 	}
-	
+	// Convert numbers to markers
 	char convertNumToMarker(int i) {
 		switch(i) {
 		case 1:
@@ -204,7 +204,7 @@ public class TicTacToeGame extends Application {
 			return ' ';	
 		}
 	}
-	// Tällä alotetaan peli
+	// This is used to start the game
 	void startGame() {
 		try {
 			while(!TTT.startGame(playerNum)) {
@@ -218,3 +218,4 @@ public class TicTacToeGame extends Application {
 	}
 
 }
+
