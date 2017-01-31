@@ -78,7 +78,7 @@ public class TicTacToeGame extends Application {
 	        
 	        btns[i].setOnAction(new EventHandler<ActionEvent>() {
 	 
-	            @Overridi<e
+	            @Override
 	            public void handle(ActionEvent event) {
 	                playTurn(GridPane.getRowIndex(((Button)event.getSource())), GridPane.getColumnIndex(((Button)event.getSource())) );
 	                updateBoard();
@@ -114,9 +114,9 @@ public class TicTacToeGame extends Application {
 
 			@Override
 			public void run() {
-				Platform.runLater(
-						()->{
-							updateBoard();
+				//
+				Platform.runLater(()->{
+					updateBoard();
 				});
 			}
         	
