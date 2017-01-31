@@ -38,7 +38,7 @@ public class TicTacToeGame extends Application {
 	Scene sceneMain, sceneStart;
 	
 	public static void main(String[] args) {
-
+		//If the program is started with wrong arguments -> exit
     	if (args.length != 1) {
     		System.out.println("Usage: TicTacToeGame <serverhost>");
     		System.exit(0);
@@ -78,7 +78,7 @@ public class TicTacToeGame extends Application {
 	        
 	        btns[i].setOnAction(new EventHandler<ActionEvent>() {
 	 
-	            @Override
+	            @Overridi<e
 	            public void handle(ActionEvent event) {
 	                playTurn(GridPane.getRowIndex(((Button)event.getSource())), GridPane.getColumnIndex(((Button)event.getSource())) );
 	                updateBoard();
@@ -204,7 +204,7 @@ public class TicTacToeGame extends Application {
 			return ' ';	
 		}
 	}
-	
+	// Tällä alotetaan peli
 	void startGame() {
 		try {
 			while(!TTT.startGame(playerNum)) {
