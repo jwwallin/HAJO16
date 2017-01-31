@@ -1,16 +1,23 @@
 import java.io.*;
 import java.net.*;
 
+/**
+ * @author Jussi Wallin, Antti Auranen, Niklas Luomala
+ * 
+ */
 public class AdderManager {
-
+	
+	// address and port number definitions
 	public static String remoteName = "localhost";
 	public static int remoteDatagramPort = 3126;
-	public static int myTcpPort = 15554;
-	public static int adderStartPort = 15601;
-
+	public static int localDatagramPort = 15554;
+	public static int myTcpPort = 15555;
+	public static int adderStartPort = 15556; //adder ports are generated in increasing order beginning at adderStartPort
+	
+	//timeout count limit for TCP connection establishing
 	public static int timeoutLimit = 5;
 	
-	// object streams for io
+	// object streams for IO
 	static ObjectInputStream in = null;
 	static ObjectOutputStream out = null;
 
@@ -22,12 +29,17 @@ public class AdderManager {
 	//adders
 	static int[] adderPorts;
 	static AdderThread[] adders;
+	
+	//the shared data structure
+	static AdderSharedData data;
 
+	
+	
 	public static void main(String[] args) {
 		//remote address
 		InetAddress addr;
 
-		// tcp socket timeout for connection
+		// tcp socket timeout for connection creation
 		int tcpTimeout = 0;
 
 		try {
@@ -36,7 +48,7 @@ public class AdderManager {
 			tcpSockServ.setSoTimeout(5000); // 5 second timeout
 
 			// create local datagram socket and connect to remote
-			datagramSock = new DatagramSocket(15555);
+			datagramSock = new DatagramSocket(localDatagramPort);
 			addr = InetAddress.getByName(remoteName);
 			datagramSock.connect(addr, remoteDatagramPort);
 
@@ -61,8 +73,9 @@ public class AdderManager {
 						System.out.println("Timeout limit reached");
 						quit();
 					}
-				} //try
-
+				}
+				
+				// make sure connection was successfully created
 				if (tcpSock == null || !tcpSock.isConnected()) {
 					System.out.println("Connection failed");
 				} else {
@@ -72,10 +85,10 @@ public class AdderManager {
 			} while (retry);
 			
 			
-		} catch (Exception e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 			quit();
-		} //try
+		}
 
 		
 		try {
@@ -91,32 +104,32 @@ public class AdderManager {
 		int retryCount = 0;
 		int adderCount = 0;
 		while (retry) {
-			try {
-				if (in.available() > 0) {
-					adderCount = in.readInt();
+			
+			//read adder count sent by workdistributor
+				if (checkAvailable()) {
+					adderCount = readInt();
 					System.out.println("Requested adder count: " + adderCount);
 					retry = false;
 				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			} 
+			
+			//wait 
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 				retry = false;
 			}
+			
+			//check for retries
 			retryCount++;
 			if (retryCount >= 50) {
-				try {
-					out.writeInt(-1);
-					out.flush();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+					sendInt(-1);
 				quit();
 			}
 		}
+		
+		//create new shared data structure for the requested adder count
+		data = new AdderSharedData(adderCount);
 		
 		//generate adder ports
 		adderPorts = new int[adderCount];
@@ -127,35 +140,139 @@ public class AdderManager {
 		//generate adders
 		adders = new AdderThread[adderCount];
 		for(int i = 0; i < adderCount; i++) {
-			adders[i] = new AdderThread(adderPorts[i]);
+			adders[i] = new AdderThread(adderPorts[i], adderStartPort, data);
+			adders[i].setName("Adder-" + i);
 			adders[i].start();
 		}
 		
-		try {
-			for (int i = 0; i < adderCount; i++) {
-				out.writeInt(adderPorts[i]);
-				out.flush();
+		//give port numbers to the workdistributor
+			for (int i = 0; i < adderCount; i++)
+				sendInt(adderPorts[i]);
+		
+		long lastOpTime = System.currentTimeMillis();
+		boolean run = true;
+		while (run) {
+			//check for current operations
+				if (checkAvailable()) {
+					switch (readInt()) {
+					
+					//work distributor has requested  a stop to all adders
+					case 0:
+						run = false;
+						break;
+						
+					//work distributor has requested total sum
+					case 1:
+						sendInt(data.getTotalSum());
+						break;
+						
+					//work distributor has requested the adder with greatest sum
+					case 2:
+						int biggestIndex = 0;
+						int biggest = data.getAdderDataSum(0);
+						for (int i = 1; i < adderCount; i++) {
+							int num = data.getAdderDataSum(i);
+							if (num > biggest) {
+								biggestIndex = i;
+								biggest = num;
+							}
+							
+							sendInt(biggestIndex);
+						}
+						break;
+						
+					//work distributor has requested the total count of numbers
+					case 3:
+						sendInt(data.getTotalNumberCount());
+						break;
+					default:
+						sendInt(-1);
+					
+					}
+					lastOpTime = System.currentTimeMillis();
+				}
+			
+			//if no operations by workdistributor in 1 minute
+			if(System.currentTimeMillis() - lastOpTime > 60000) {
+				quit();
 			}
+			
+			// wait for 1 second
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				quit();
+			}
+		}
+		
+		quit();
+	}
+	
+	/**
+	 * sends the integer through the TCP socket created earlier
+	 * @param i
+	 */
+	private static void sendInt(int i) {
+		try {
+			out.writeInt(i);
+			out.flush();
 		} catch (IOException e) {
+			System.out.println("Exception while sending an integer");
 			e.printStackTrace();
 			quit();
 		}
-		
-//		boolean run = true;
-//		while (run) {
-//			try {
-//				Thread.sleep(1000);
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//				run = false;
-//			}
-//		}
-		
-		
+	}
+	
+	/**
+	 * reads the next integer from the TCP socket
+	 * @return
+	 */
+	private static int readInt() {
+		try {
+			return in.readInt();
+		} catch (IOException e) {
+			System.out.println("Exception while reading an integer");
+			e.printStackTrace();
+			quit();
+		}
+		return 0;
+	}
+	
+	/**
+	 * checks availability of input from the TCP socket
+	 * @return 
+	 */
+	private static boolean checkAvailable() {
+		try {
+			
+			if (in.available() > 0)
+				return true;
+			
+		} catch (IOException e) {
+			System.out.println("Exception while checking availability");
+			e.printStackTrace();
+			quit();
+		}
+		return false;
 	}
 
+	
+	
+	/**
+	 * closes all connections and adder threads
+	 */
 	private static void quit() {
-		System.out.println("Quitting AdderManager");
+		
+		//stop adders if they are running
+		if (adders != null) {
+			for (AdderThread adder : adders) {
+				System.out.println("Stopping adder");
+				if (adder != null && adder.isAlive())
+					adder.requestStop();
+			}
+		}
+		
 		// close all open streams
 		if (in != null)
 			try {
@@ -188,6 +305,8 @@ public class AdderManager {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+
+		System.out.println("Quitting AdderManager");
 		System.exit(0);
 	}
 
