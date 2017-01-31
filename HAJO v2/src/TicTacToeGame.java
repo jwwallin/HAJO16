@@ -36,6 +36,7 @@ public class TicTacToeGame extends Application {
 	Stage primaryStage;
 	Scene sceneMain, sceneStart;
 	
+	
 	public static void main(String[] args) {
 		//If the program is started with wrong arguments -> exit
     	if (args.length != 1) {
@@ -46,12 +47,17 @@ public class TicTacToeGame extends Application {
 		
 		launch(); //start the UI
 	}
-
+	
+	/**
+	 * JavaFX Thread calls this when main window is ready
+	 */
 	@Override
 	public void start(Stage S) throws Exception {
-
+		
+		// save address to the primary window
 		primaryStage = S;
 		
+		//connect to the server
 		try {
 			TTT = (TicTacToe) Naming.lookup(host);
 			System.out.println("Connected to server");
@@ -60,10 +66,10 @@ public class TicTacToeGame extends Application {
             System.out.println("Player number: " + playerNum);
             
 		} catch(Exception e) {
-			
+			e.printStackTrace();
 		}
 		
-		
+		//Create the game board
         GridPane root1 = new GridPane();
         
 		primaryStage.setTitle("TicTacToe Player " + playerNum);
@@ -88,6 +94,7 @@ public class TicTacToeGame extends Application {
 	        root1.getChildren().add(btns[i]);
 		}
 		
+		//create the start screen
 		Button btn = new Button();
         btn.setText("Start Game");
         btn.setOnAction(new EventHandler<ActionEvent>() {
@@ -101,34 +108,42 @@ public class TicTacToeGame extends Application {
         StackPane root2 = new StackPane();
         root2.getChildren().add(btn);
 		
+        //create the scenes
 		sceneMain = new Scene(root1, 300, 300);
 		sceneStart = new Scene(root2, 300,300);
 		
+		//set the starting screen as active
         primaryStage.setScene(sceneStart);
         primaryStage.show();
 		
-        //create a timed UI-update to represent current gamestate
-        
+        //create a timed UI-update to present current game board state
         TimerTask task = new TimerTask() {
 
 			@Override
 			public void run() {
 				
+				//this function creates a task for the JavaFX main thread to run when it has time
 				Platform.runLater(()->{
 					updateBoard();
 				});
 			}
         	
         };
-
+        
+        //start the scheduled event
         Timer t = new Timer();
         t.schedule(task, 0, 500);
         
 	}
-	// Play a turn	
+	
+	/**
+	 *  Play a turn	
+	 */
 	void playTurn(int row, int col) {
 		try {
 			System.out.print("playing turn: ");
+			
+			//do players turn
 			if (TTT.doTurn(playerNum, 3*row+col)==0) {
 				System.out.println("success");
 			} else {
@@ -136,19 +151,26 @@ public class TicTacToeGame extends Application {
 			}
 
 		} catch (Exception e) {
-			
+			e.fillInStackTrace();
 		}
 	}
-	// Updates the TicTacToe board
+	
+	/**
+	 *  Updates the TicTacToe board
+	 */
 	void updateBoard() {
 
 		try {
 			
+			//get board from server
 			board = TTT.getBoardState();
+			
+			//convert board to markers
 			for (int i = 0; i < btns.length;i++) {
 				btns[i].setText("" + convertNumToMarker(board[i]));
 			}
 			
+			//check game is on and game board is visible
 			if (!TTT.gameGoing() && primaryStage.getScene() != sceneStart) {
 				primaryStage.setScene(sceneStart);
 				
@@ -184,13 +206,16 @@ public class TicTacToeGame extends Application {
 				
 			}
 			
-			//primaryStage.show();
-			
 		} catch (Exception e) {
-			
+			e.printStackTrace();
 		}
 	}
-	// Convert numbers to markers
+	
+	/**
+	 *  Convert numbers to markers
+	 * @param i 
+	 * @return 'x'|'o'|' '
+	 */
 	char convertNumToMarker(int i) {
 		switch(i) {
 		case 1:
@@ -201,15 +226,22 @@ public class TicTacToeGame extends Application {
 			return ' ';	
 		}
 	}
-	// This is used to start the game
+	
+	/**
+	 *  This is used to start the game
+	 */
 	void startGame() {
 		try {
+			
+			//wait until opponent starts game
 			while(!TTT.startGame(playerNum)) {
 				Thread.sleep(100);
 			}
+			
+			//change to game board
 			primaryStage.setScene(sceneMain);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		}
 	}
