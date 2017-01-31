@@ -33,9 +33,9 @@ public class TicTacToeSrv extends java.rmi.server.UnicastRemoteObject implements
 		
 		if (playerCount >= 2) return -1; //check that max 2 players are trying to play
 		
-		playerCount++;
+		playerCount++; //add new player
 		System.err.println("Server Debug: Registered player " + playerCount);
-		return playerCount;
+		return playerCount; //give client it's player number
 	}
 
 	/**
@@ -45,8 +45,7 @@ public class TicTacToeSrv extends java.rmi.server.UnicastRemoteObject implements
 	 */
 	@Override
 	synchronized public int[] getBoardState() throws Exception {
-
-		//System.err.println("Server Debug: Returned board state to player");
+		
 		return board;
 	}
 
@@ -60,6 +59,7 @@ public class TicTacToeSrv extends java.rmi.server.UnicastRemoteObject implements
 	synchronized public boolean getTurn(int playerNum) throws Exception {
 
 		System.err.println("Server Debug: Returned turn boolean to player " + playerNum);
+		// check that clients playerNum is the same as current turn holder
 		if (playerNum == currentTurn) return true;
 		return false;
 	}
@@ -72,18 +72,25 @@ public class TicTacToeSrv extends java.rmi.server.UnicastRemoteObject implements
 	@Override
 	synchronized public int doTurn(int playerNum, int pos) throws Exception {
 		
-		if (board[pos] == 0 && gameGoing && currentTurn == playerNum) { //check nothing is present in this square
+		//check nothing is present in this square and game is going and clients player number is same as current turn holder
+		if (board[pos] == 0 && gameGoing && currentTurn == playerNum) {
+			
+			//change to next players turn 
 			if (currentTurn == 1) { 
 				System.err.println("Server Debug: Set turn to player 2 by " + playerNum);
 				currentTurn = 2; }
 			
 			else {
 				System.err.println("Server Debug: Set turn to player 1 by " + playerNum);
-				currentTurn = 1; //change to next players turn
+				currentTurn = 1;
 			}
-			board[pos] = playerNum; //set players mark on the square
+			
+			//set players mark on the square
+			board[pos] = playerNum;
 
+			//check if game has ended
 			int result = checkGameEnd();
+			
 			if (result != 0) {
 				winner = result;
 				gameGoing = false;
@@ -92,8 +99,10 @@ public class TicTacToeSrv extends java.rmi.server.UnicastRemoteObject implements
 			}
 			
 			return 0; //return success
+			
 		} else {
 
+			//check if game has ended
 			int result = checkGameEnd();
 			if (result != 0) {
 				winner = result;
@@ -107,7 +116,7 @@ public class TicTacToeSrv extends java.rmi.server.UnicastRemoteObject implements
 	}
 
 	/**
-	 * Function for clients to check if the game is still going on.
+	 * Function (Getter) for clients to check if the game is still going on.
 	 * 
 	 * @return gameGoing
 	 */
@@ -124,7 +133,11 @@ public class TicTacToeSrv extends java.rmi.server.UnicastRemoteObject implements
 	 */
 	@Override
 	synchronized public boolean startGame(int playerNum) throws Exception {
+		
+		//set that player has asked to begin game
 		startGame[playerNum-1] = true;
+		
+		//check if both players want to begin
 		if (startGame[0] == startGame[1]) { 
 			gameGoing = true;
 			return true;
